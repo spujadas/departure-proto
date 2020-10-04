@@ -1,14 +1,14 @@
 // compile for Python *from project root* with:
-// python -m grpc_tools.protoc --python_out=python --grpc_python_out=python -I proto proto\departure_board\board\departure_board.proto
+// python -m grpc_tools.protoc --python_out=python --grpc_python_out=python -I proto proto\departure\board\departure.proto
 // see https://github.com/protocolbuffers/protobuf/issues/1491#issuecomment-289304959
 
 // compile for C++ from workspace root with:
-// protoc -I proto/departure_board/board --grpc_out=c++/lib --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` proto/departure_board/board/departure_board.proto
-// protoc -I proto/departure_board/board --cpp_out=c++/lib proto/departure_board/board/departure_board.proto
+// protoc -I proto/departure/board --grpc_out=c++/lib --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` proto/departure/board/departure.proto
+// protoc -I proto/departure/board --cpp_out=c++/lib proto/departure/board/departure.proto
 
 syntax = "proto3";
 
-package departure_board.proto;
+package departure.proto;
 
 message Pixel {
     int32 x = 1;
