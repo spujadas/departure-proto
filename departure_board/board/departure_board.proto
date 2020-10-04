@@ -1,0 +1,132 @@
+// compile for Python *from project root* with:
+// python -m grpc_tools.protoc --python_out=python --grpc_python_out=python -I proto proto\departure_board\board\departure_board.proto
+// see https://github.com/protocolbuffers/protobuf/issues/1491#issuecomment-289304959
+
+// compile for C++ from workspace root with:
+// protoc -I proto/departure_board/board --grpc_out=c++/lib --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` proto/departure_board/board/departure_board.proto
+// protoc -I proto/departure_board/board --cpp_out=c++/lib proto/departure_board/board/departure_board.proto
+
+syntax = "proto3";
+
+package departure_board.proto;
+
+message Pixel {
+    int32 x = 1;
+    int32 y = 2;
+    int32 r = 3;
+    int32 g = 4;
+    int32 b = 5;
+}
+
+message BoardSectionContent {
+    repeated Pixel pixels = 1;
+    int32 content_w = 2;
+    int32 content_h = 3;
+    bool repeat_x = 4;
+    bool repeat_y = 5;
+}
+
+message NoMovement {
+    int32 x_offset_init = 1;
+    int32 y_offset_init = 2;
+}
+
+message StaticContent {
+    int32 total_duration = 1;
+    int32 x_offset_init = 2;
+    int32 y_offset_init = 3;
+}
+
+message ScrollingContent {
+    int32 step_duration = 1;
+    int32 total_steps = 2;
+    int32 delta_x_per_step = 3;
+    int32 delta_y_per_step = 4;
+    int32 x_offset_init = 5;
+    int32 y_offset_init = 6;
+}
+
+message Movement {
+    oneof movement {
+        NoMovement no_movement = 1;
+        StaticContent static_content = 2;
+        ScrollingContent scrolling_content = 3;
+    }
+}
+
+message BoardSectionOperationStatus {
+    int32 section_index = 1;
+    enum BoardSectionStatus {
+        OK = 0;
+        SECTION_NOEXISTS = 1;
+        SECTION_EXISTS = 2;
+    }
+    BoardSectionStatus status = 2;
+}
+
+// Update
+
+message BoardSectionUpdateRequest {
+    int32 section_index = 1;
+    BoardSectionContent content = 2;
+    repeated Movement movement = 3;  // use several movements to create cycle
+    bool continue_movement = 4;
+}
+
+message BoardSectionsUpdateRequest {
+    repeated BoardSectionUpdateRequest requests = 1;
+}
+
+message BoardSectionsUpdateResponse {
+    repeated BoardSectionOperationStatus status = 1;
+}
+
+
+// create
+
+message BoardSectionCreateRequest {
+    int32 section_index = 1;
+    int32 output_x = 2;
+    int32 output_y = 3;
+    int32 output_w = 4;
+    int32 output_h = 5;
+}
+
+message BoardSectionsCreateRequest {
+    repeated BoardSectionCreateRequest requests = 1;
+}
+
+message BoardSectionsCreateResponse {
+    repeated BoardSectionOperationStatus status = 1;
+}
+
+
+// delete
+
+message BoardSectionDeleteRequest {
+    int32 section_index = 1;
+}
+
+message BoardSectionsDeleteRequest {
+    repeated BoardSectionDeleteRequest requests = 1;
+}
+
+message BoardSectionsDeleteResponse {
+    repeated BoardSectionOperationStatus status = 1;
+}
+
+
+// service
+
+service BoardManager {
+    rpc BoardSectionsUpdate (BoardSectionsUpdateRequest)
+        returns (BoardSectionsUpdateResponse);
+
+    /*
+    // reserved for future use
+    rpc BoardSectionCreate (BoardSectionCreateRequest)
+        returns (BoardSectionCreateResponse);
+    rpc BoardSectionDelete (BoardSectionDeleteRequest)
+        returns (BoardSectionDeleteResponse);
+    */
+}
